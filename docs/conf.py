@@ -18,7 +18,7 @@ extensions = []
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-root_doc = 'index.rst_1'
+root_doc = 'index.rst'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -26,3 +26,4 @@ root_doc = 'index.rst_1'
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
+
