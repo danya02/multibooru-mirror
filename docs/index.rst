@@ -11,6 +11,8 @@ Welcome to multibooru-mirror's documentation!
    :caption: Contents:
 
 
+The :doc:`format` section contains information about the format of the recorded data.
+
 
 Indices and tables
 ==================
