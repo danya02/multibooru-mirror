@@ -1,0 +1,1 @@
+Why does RTD not pick up the index file?
