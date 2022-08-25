@@ -10,8 +10,7 @@ Welcome to multibooru-mirror's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-The :doc:`format` section contains information about the format of the recorded data.
+   format/index
 
 
 Indices and tables

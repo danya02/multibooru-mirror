@@ -1,6 +1,12 @@
 Format
 ======
 
+.. toctree::
+    :maxdepth: 2
+
+    danbooru
+
+
 Each site has a somewhat different set of data that it exposes.
 Because of this, it is difficult to find a single database schema that would fit all of them.
 Instead, the source of truth is a set of JSON records, and those are later processed into database tables offline.
@@ -13,7 +19,7 @@ Each record has the same top-level keys: `v`, `t`, `s`, `k`.
 The `v` key contains a string representing the global format being used.
 The current version is `"1"`.
 
-The `t` key contains a string that is an ISO 8601 timestamp, indicating when the record was created.
+The `t` key contains a number that is the Unix time when the record was created.
 This corresponds to the time that the corresponding fact was scraped.
 
 The `s` key contains a string that is the identifier of the site from which the data was obtained.
