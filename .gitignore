@@ -131,7 +131,10 @@ dmypy.json
 */debug/
 */target/
 
-*/Cargo.lock
+# This should not be ignored, because we are building an application
+# rather than a library; this is also used for the GitHub Actions
+# caching action.
+#*/Cargo.lock
 
 **/*.rs.bk
 
