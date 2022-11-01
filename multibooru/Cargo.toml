@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "danbooru_scraping",
+    "danbooru_model",
+]

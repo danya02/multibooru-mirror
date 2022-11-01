@@ -14,7 +14,7 @@ pub enum Rating {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct DanbooruPostWeb {
+pub struct Post {
     id: u64,
     created_at: DateTime<Utc>,
     updated_at: DateTime<Utc>, // if this could be null, this means that no updates since initial,
@@ -139,12 +139,6 @@ where
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_deserialize_danbooru_post_json() {
-        let data = get_test_json_string();
-        let _post: DanbooruPostWeb = serde_json::from_str(data).unwrap();
-    }
-
     /// As a separate function to avoid clutter
     fn get_test_json_string() -> &'static str {
         r#"{
@@ -195,4 +189,11 @@ mod tests {
         "preview_file_url":"https://cdn.donmai.us/preview/6a/12/6a12e49132031646924596e21f7ccab9.jpg"
         }"#
     }
+
+    #[test]
+    fn test_deserialize_danbooru_post_json() {
+        let data = get_test_json_string();
+        let _post: Post = serde_json::from_str(data).expect("failed to deserialize JSON that should be valid -- error in test");
+    }
+
 }
