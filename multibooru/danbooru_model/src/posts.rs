@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum Rating {
     #[serde(alias = "g")]
     General,
@@ -68,6 +68,8 @@ pub struct Post {
     last_noted_at: Option<DateTime<Utc>>,
 
     has_children: bool,
+
+    pixiv_id: Option<u64>,
 }
 
 fn deserialize_tag_string<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
@@ -117,17 +119,16 @@ where
         where
             E: Error,
         {
-            let bytes = md5_str.as_bytes();
             let mut output = [0; 16];
-            if bytes.len() == 32 {
-                for i in (0..bytes.len()).step_by(2) {
-                    output[i / 2] = bytes[i] + bytes[i + 1];
-                }
-            } else {
+            if md5_str.len() != 32 {
                 return Err(E::custom(format!(
                     "md5 hash length ({}) does not equal 32",
-                    bytes.len()
+                    md5_str.len()
                 )));
+            }
+            for (i, byte) in md5_str.as_bytes().chunks(2).enumerate() {
+                let byte_str = std::str::from_utf8(byte).or(Err(E::custom(format!("invalid utf8 encountered while slicing string into byte pieces: {:?}", byte))))?;
+                output[i] = u8::from_str_radix(byte_str, 16).or(Err(E::custom(format!("byte in position {} is an invalid hexadecimal value: {}", i, byte_str))))?;
             }
             Ok(output)
         }
@@ -193,7 +194,42 @@ mod tests {
     #[test]
     fn test_deserialize_danbooru_post_json() {
         let data = get_test_json_string();
-        let _post: Post = serde_json::from_str(data).expect("failed to deserialize JSON that should be valid -- error in test");
+        let post: Post = serde_json::from_str(data).expect("failed to deserialize JSON that should be valid -- error in test");
+        assert_eq!(post.id, 4777148);
+        assert_eq!(post.created_at, Utc.ymd(2021, 9, 14).and_hms_milli(18, 33, 47, 088));
+        assert_eq!(post.uploader_id, 350028);
+        assert_eq!(post.score, 1);
+        assert_eq!(post.source, Some("https://www.pokemon.jp/look/comic/detail/16524.html".to_string()));
+        assert_eq!(post.md5, [0x6a, 0x12, 0xe4, 0x91, 0x32, 0x03, 0x16, 0x46, 0x92, 0x45, 0x96, 0xe2, 0x1f, 0x7c, 0xca, 0xb9]);
+
+        assert_eq!(post.rating, Rating::General);
+        assert_eq!(post.image_width, 402);
+        assert_eq!(post.image_height, 1283);
+        assert_eq!(post.fav_count, 1);
+        assert_eq!(post.last_noted_at, Some(Utc.ymd(2021, 9, 24).and_hms_milli(06, 45, 30, 453)));
+        assert_eq!(post.parent_id, None);
+        assert_eq!(post.has_children, false);
+        assert_eq!(post.approver_id, Some(728936));
+        assert_eq!(post.file_size, 237334);
+        assert_eq!(post.up_score, Some(1));
+        assert_eq!(post.down_score, Some(0));
+        /*
+        assert_eq!(post.is_pending, false);
+        assert_eq!(post.is_flagged, false);
+        assert_eq!(post.is_deleted, false);
+        assert_eq!(post.is_banned, false);
+        */
+        assert_eq!(post.updated_at, Utc.ymd(2022, 5, 23).and_hms_milli(18, 12, 15, 938));
+        assert_eq!(post.pixiv_id, None);
+        assert_eq!(post.last_commented_at, None);
+        assert_eq!(post.tags_general, vec!["4koma", "blank_eyes", "blush", "bowl", "chopsticks", "comic", "company_name", "copyright_name", "food", "furigana", "mundane_utility", "nagashi_soumen", "narration", "no_humans", "noodles", "pokemon_(creature)", "soumen", "sound_effects", "sparkle", "speech_bubble", "sweatdrop", "water"]);
+        assert_eq!(post.tags_character, vec!["blastoise", "litten", "popplio", "rowlet"]);
+        assert_eq!(post.tags_copyright, vec!["pokemon"]);
+        assert_eq!(post.tags_artist, vec!["yamashita_takahiro"]);
+        assert_eq!(post.tags_meta, vec!["highres", "official_art", "translated"]);
+        assert_eq!(post.url, "https://cdn.donmai.us/original/6a/12/6a12e49132031646924596e21f7ccab9.jpg");
+
+
     }
 
 }
