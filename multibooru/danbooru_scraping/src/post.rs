@@ -34,7 +34,7 @@ pub async fn new_posts(sender: impl PersistenceSender) {
 
     // Also submit the last post to the persistence layer.
     sender
-        .submit(Record::Post(last_post.id, PostState::Exists(last_post)).into())
+        .submit(Record::Post{id: last_post.id, state: PostState::Exists(last_post)}.into())
         .await;
 
     loop {
@@ -59,9 +59,14 @@ pub async fn new_posts(sender: impl PersistenceSender) {
         for post in posts {
             last_post_id = last_post_id.max(post.id);
             sender
-                .submit(Record::Post(post.id, PostState::Exists(post)).into())
+                .submit(Record::Post{id: post.id, state: PostState::Exists(post)}.into())
                 .await;
         }
+
+        // Also submit that the post after the last post doesn't exist.
+        sender
+            .submit(Record::Post{id: last_post_id + 1, state: PostState::Missing}.into())
+            .await;
 
         // Wait a bit before getting the next batch of posts.
         log::debug!("Waiting for next posts...");

@@ -149,7 +149,10 @@ where
     let mut tag_string = String::new();
     for tag in tags {
         tag_string.push_str(tag);
-        tag_string.push(' ');
+        // If there are more tags, separate them with a whitespace.
+        if tag != tags.last().unwrap() {
+            tag_string.push(' ');
+        }
     }
     serializer.serialize_str(&tag_string)
 }

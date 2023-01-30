@@ -41,6 +41,7 @@
 macro_rules! make_entity_state {
     ($name:ident, $state_name:ident { $($assoc:ident: $id:ty => $state:ty),* $(,)? }) => {
         #[derive(Debug, Clone, PartialEq, Hash, ::serde::Serialize, ::serde::Deserialize)]
+        #[serde(tag = "entity", content = "id")]
         pub enum $name {
             $(
                 $assoc($id),
@@ -48,9 +49,13 @@ macro_rules! make_entity_state {
         }
 
         #[derive(Debug, Clone, PartialEq, Hash, ::serde::Serialize, ::serde::Deserialize)]
+        #[serde(tag = "entity", content = "data")]
         pub enum $state_name {
             $(
-                $assoc($id, $state),
+                $assoc{
+                    id: $id,
+                    state: $state
+                },
             )*
         }
 
@@ -58,7 +63,7 @@ macro_rules! make_entity_state {
             fn from(state: $state_name) -> Self {
                 match state {
                     $(
-                        $state_name::$assoc(id, _) => $name::$assoc(id),
+                        $state_name::$assoc{id, ..} => $name::$assoc(id),
                     )*
                 }
             }

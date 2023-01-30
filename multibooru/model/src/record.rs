@@ -19,6 +19,7 @@ pub struct Record {
 }
 
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(tag = "booru", content = "data")]
 pub enum BooruRecord {
     /// A record from Danbooru (https://danbooru.donmai.us).
     Danbooru(danbooru::record::Record),
