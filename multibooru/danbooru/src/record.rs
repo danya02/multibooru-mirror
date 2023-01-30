@@ -1,14 +1,33 @@
+use crate::{post::Post, tag::Tag};
+use common::make_entity_state;
 use serde::{Deserialize, Serialize};
 
-use crate::post::Post;
+make_entity_state! {
+    Entity, Record {
+        Post: u64 => PostState,
+        Tag: u64 => TagState,
+    }
+}
 
-/// A record of some state on Danbooru.
-/// This could be the state of a post, a comment, a tag, or anything else.
+/// An enum representing the state of a post.
+/// A post can either exist, in which case it has the given data,
+/// or it can be missing.
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
-pub enum Record {
-    /// A post has this data.
-    Post(Post),
-    /// A post with the given ID does not exist.
-    /// It could have been deleted, or it is in the future.
-    PostMissing(i64),
+pub enum PostState {
+    /// The post exists.
+    Exists(Post),
+    /// The post is missing.
+    /// This might mean that it was deleted, or that its ID is in the future.
+    Missing,
+}
+
+/// An enum representing the state of a tag.
+/// A tag can either exist, in which case it has the given data,
+/// or it can be missing.
+#[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
+pub enum TagState {
+    /// The tag exists.
+    Exists(Tag),
+    /// The tag is missing.
+    Missing,
 }
