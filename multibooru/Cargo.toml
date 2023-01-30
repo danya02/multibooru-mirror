@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
-    "danbooru_scraping",
-    "danbooru_model",
+    "danbooru",
+    "model",
+    "common",
 ]

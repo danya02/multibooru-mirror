@@ -1,3 +1,6 @@
+pub mod post;
+pub mod record;
+
 #[cfg(test)]
 mod tests {
     #[test]
