@@ -16,9 +16,14 @@ make_entity_state! {
 pub enum PostState {
     /// The post exists.
     Exists(Post),
-    /// The post is missing.
-    /// This might mean that it was deleted, or that its ID is in the future.
-    Missing,
+    /// The post is missing, but it might exist in the future.
+    /// This usually means the post's ID is past the last known post ID.
+    MissingTemporarily,
+    /// The post is missing, and it is expected to never exist anymore.
+    /// This usually means that the post's ID is in the past,
+    /// but the post was not found --
+    /// it was probably deleted.
+    MissingPermanently,
 }
 
 impl From<Post> for PostState {
@@ -34,6 +39,8 @@ impl From<Post> for PostState {
 pub enum TagState {
     /// The tag exists.
     Exists(Tag),
-    /// The tag is missing.
-    Missing,
+    /// The tag is missing, but it might exist in the future.
+    MissingTemporarily,
+    /// The tag is missing, and it is expected to never exist anymore.
+    MissingPermanently,
 }

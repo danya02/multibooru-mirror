@@ -34,7 +34,8 @@ pub trait PersistenceSender: Sync + Send {
     async fn submit(&self, record: BooruRecord) {
         // I'm not sure if it's possible to write a more performant `submit` than `submit_and_join`,
         // so the default implementation is to just call `submit_and_join` and drop the receiver.
-        let _ = self.submit_and_join(record).await;
+        let recv = self.submit_and_join(record).await;
+        std::mem::drop(recv);
     }
 
     /// Submit a record to the backend, returning a `tokio::sync::oneshot::Receiver`.

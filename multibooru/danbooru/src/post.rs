@@ -3,13 +3,13 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Rating {
-    #[serde(alias = "g")]
+    #[serde(rename = "g")]
     General,
-    #[serde(alias = "s")]
+    #[serde(rename = "s")]
     Sensitive,
-    #[serde(alias = "q")]
+    #[serde(rename = "q")]
     Questionable,
-    #[serde(alias = "e")]
+    #[serde(rename = "e")]
     Explicit,
 }
 
@@ -72,7 +72,9 @@ pub struct Post {
     pub source: Option<String>,
 
     #[serde(deserialize_with = "deserialize_md5", serialize_with = "serialize_md5")]
-    pub md5: [u8; 16],
+    /// This can be missing. For example, it is missing on posts that have `is_banned=true`.
+    /// It has been seen on posts that were automatically rejected, because they come from banned sources (`banned_artist`).
+    pub md5: Option<[u8; 16]>,
 
     #[serde(alias = "file_url")]
     pub url: String, // corresponds to "file_url", previews are not recorded
@@ -157,7 +159,7 @@ where
     serializer.serialize_str(&tag_string)
 }
 
-fn deserialize_md5<'de, D>(deserializer: D) -> Result<[u8; 16], D::Error>
+fn deserialize_md5<'de, D>(deserializer: D) -> Result<Option<[u8; 16]>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -166,10 +168,17 @@ where
 
     struct JsonStringToMd5ArrVisitor;
     impl<'de> Visitor<'de> for JsonStringToMd5ArrVisitor {
-        type Value = [u8; 16];
+        type Value = Option<[u8; 16]>;
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
             formatter.write_str("md5 hash as a hex string of length 32")
+        }
+
+        fn visit_none<E>(self) -> Result<Self::Value, E>
+        where
+            E: Error,
+        {
+            Ok(None)
         }
 
         fn visit_str<E>(self, md5_str: &str) -> Result<Self::Value, E>
@@ -191,21 +200,26 @@ where
                     "byte in position {i} is an invalid hexadecimal value: {byte_str}",
                 ))))?;
             }
-            Ok(output)
+            Ok(Some(output))
         }
     }
     deserializer.deserialize_str(JsonStringToMd5ArrVisitor)
 }
 
-fn serialize_md5<S>(md5: &[u8; 16], serializer: S) -> Result<S::Ok, S::Error>
+fn serialize_md5<S>(md5: &Option<[u8; 16]>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    let mut md5_str = String::new();
-    for byte in md5 {
-        md5_str.push_str(&format!("{byte:02x}"));
+    match md5 {
+        Some(md5) => {
+            let mut md5_str = String::new();
+            for byte in md5 {
+                md5_str.push_str(&format!("{byte:02x}"));
+            }
+            serializer.serialize_str(&md5_str)
+        }
+        None => serializer.serialize_none(),
     }
-    serializer.serialize_str(&md5_str)
 }
 
 impl Post {
@@ -311,10 +325,10 @@ mod tests {
         );
         assert_eq!(
             post.md5,
-            [
+            Some([
                 0x6a, 0x12, 0xe4, 0x91, 0x32, 0x03, 0x16, 0x46, 0x92, 0x45, 0x96, 0xe2, 0x1f, 0x7c,
                 0xca, 0xb9
-            ]
+            ])
         );
         assert_eq!(post.last_comment_bumped_at, None);
         assert_eq!(post.image_height, 1283);

@@ -1,6 +1,6 @@
 mod backend;
 mod persistence;
-pub use persistence::{Persistence, PersistenceSender};
+pub use crate::persistence::{Persistence, PersistenceSender};
 
 /// Make the persistence object.
 pub fn make_persistence() -> impl Persistence {

@@ -9,6 +9,7 @@ async fn main() {
     persistence.init();
 
     tokio::spawn(danbooru_scraping::post::new_posts(persistence.get_sender()));
+    tokio::spawn(danbooru_scraping::tag::new_tags(persistence.get_sender()));
 
     log::info!("Started all scrapers, waiting for Ctrl+C...");
     tokio::signal::ctrl_c().await.unwrap();

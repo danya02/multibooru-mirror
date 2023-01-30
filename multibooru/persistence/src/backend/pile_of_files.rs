@@ -55,12 +55,13 @@ pub struct PileOfFilesSender {
 
 #[async_trait::async_trait]
 impl PersistenceSender for PileOfFilesSender {
+    #[allow(clippy::async_yields_async)]
     async fn submit_and_join(
         &self,
         record: BooruRecord,
     ) -> tokio::sync::oneshot::Receiver<PersistenceResult> {
         async fn inner(this: &PileOfFilesSender, record: BooruRecord) -> PersistenceResult {
-            if this.shutting_down_receiver.borrow().clone() {
+            if *this.shutting_down_receiver.borrow() {
                 Err(PersistenceError::ShuttingDown)
             } else {
                 let snow = Snowflake::new();
@@ -68,7 +69,7 @@ impl PersistenceSender for PileOfFilesSender {
                 let mut file = tokio::fs::File::create(this.directory.join(format!("{snow}.json")))
                     .await
                     .map_err(|e| {
-                        PersistenceError::Unknown(format!("Failed to create file: {}", e))
+                        PersistenceError::Unknown(format!("Failed to create file: {e}"))
                     })?;
 
                 file.write_all(serde_json::to_string(&record).unwrap().as_bytes())
