@@ -15,47 +15,47 @@ pub enum Rating {
 
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Post {
-    id: u64,
-    created_at: DateTime<Utc>,
-    updated_at: DateTime<Utc>, // if this could be null, this means that no updates since initial,
+    pub id: u64,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>, // if this could be null, this means that no updates since initial,
     // so this should copy created_at
-    uploader_id: u64, // maybe option
-    approver_id: Option<u64>,
+    pub uploader_id: u64, // maybe option
+    pub approver_id: Option<u64>,
 
     #[serde(alias = "tag_string_general")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
         serialize_with = "serialize_tag_string"
     )]
-    tags_general: Vec<String>,
+    pub tags_general: Vec<String>,
 
     #[serde(alias = "tag_string_artist")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
         serialize_with = "serialize_tag_string"
     )]
-    tags_artist: Vec<String>,
+    pub tags_artist: Vec<String>,
 
     #[serde(alias = "tag_string_copyright")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
         serialize_with = "serialize_tag_string"
     )]
-    tags_copyright: Vec<String>,
+    pub tags_copyright: Vec<String>,
 
     #[serde(alias = "tag_string_character")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
         serialize_with = "serialize_tag_string"
     )]
-    tags_character: Vec<String>,
+    pub tags_character: Vec<String>,
 
     #[serde(alias = "tag_string_meta")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
         serialize_with = "serialize_tag_string"
     )]
-    tags_meta: Vec<String>,
+    pub tags_meta: Vec<String>,
 
     // The "tag_string" field should be the union of all the above fields.
     // This is supposed to be redundant, so we can use it to check that no tags are lost in the process.
@@ -64,50 +64,50 @@ pub struct Post {
         serialize_with = "serialize_tag_string"
     )]
     #[serde(alias = "tag_string")]
-    tags: Vec<String>,
+    pub tags: Vec<String>,
 
     // The `tag_count*` fields are ignored, as they are expected to be redundant with the tag lists.
-    rating: Rating,
-    parent_id: Option<u64>,
-    source: Option<String>,
+    pub rating: Rating,
+    pub parent_id: Option<u64>,
+    pub source: Option<String>,
 
     #[serde(deserialize_with = "deserialize_md5", serialize_with = "serialize_md5")]
-    md5: [u8; 16],
+    pub md5: [u8; 16],
 
     #[serde(alias = "file_url")]
-    url: String, // corresponds to "file_url", previews are not recorded
+    pub url: String, // corresponds to "file_url", previews are not recorded
 
-    file_size: usize,
-    file_ext: String,
-    image_width: u32,
-    image_height: u32,
-    has_large: bool,
+    pub file_size: usize,
+    pub file_ext: String,
+    pub image_width: u32,
+    pub image_height: u32,
+    pub has_large: bool,
 
-    score: i32,
+    pub score: i32,
 
     // these are not documented but appear in public responses
-    up_score: Option<u32>,
-    down_score: Option<u32>,
+    pub up_score: Option<u32>,
+    pub down_score: Option<u32>,
 
-    fav_count: u32,
+    pub fav_count: u32,
 
-    last_commented_at: Option<DateTime<Utc>>,
-    last_comment_bumped_at: Option<DateTime<Utc>>,
-    last_noted_at: Option<DateTime<Utc>>,
+    pub last_commented_at: Option<DateTime<Utc>>,
+    pub last_comment_bumped_at: Option<DateTime<Utc>>,
+    pub last_noted_at: Option<DateTime<Utc>>,
 
-    has_children: bool,
+    pub has_children: bool,
     // It is not clear what these two fields mean as compared to `has_children`.
-    has_active_children: bool,
-    has_visible_children: bool,
+    pub has_active_children: bool,
+    pub has_visible_children: bool,
 
-    pixiv_id: Option<u64>,
+    pub pixiv_id: Option<u64>,
 
-    is_pending: bool,
-    is_flagged: bool,
-    is_deleted: bool,
-    is_banned: bool,
+    pub is_pending: bool,
+    pub is_flagged: bool,
+    pub is_deleted: bool,
+    pub is_banned: bool,
 
-    bit_flags: u32,
+    pub bit_flags: u32,
 }
 
 fn deserialize_tag_string<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>

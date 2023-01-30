@@ -4,4 +4,6 @@ members = [
     "danbooru",
     "model",
     "common",
+    "persistence",
+    "scraper",
 ]

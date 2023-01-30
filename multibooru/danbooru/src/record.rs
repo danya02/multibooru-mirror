@@ -21,6 +21,12 @@ pub enum PostState {
     Missing,
 }
 
+impl From<Post> for PostState {
+    fn from(post: Post) -> Self {
+        PostState::Exists(post)
+    }
+}
+
 /// An enum representing the state of a tag.
 /// A tag can either exist, in which case it has the given data,
 /// or it can be missing.

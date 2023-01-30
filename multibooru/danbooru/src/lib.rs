@@ -1,6 +1,8 @@
 pub mod post;
+pub use post::Post;
 pub mod record;
 pub mod tag;
+pub use tag::Tag;
 
 #[cfg(test)]
 mod tests {
