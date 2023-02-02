@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS media_assets (
+    sha256 BLOB(32) NOT NULL PRIMARY KEY,
+    media_type_json VARCHAR(255) NOT NULL,
+    size INTEGER NOT NULL
+);

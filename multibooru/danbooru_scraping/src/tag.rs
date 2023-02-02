@@ -13,7 +13,7 @@ pub async fn new_tags(sender: impl PersistenceSender) {
         .get("https://danbooru.donmai.us/tags.json?limit=1")
         .header(
             "User-Agent",
-            "multibooru-scraper/0.1.0, +https://github.com/danya02/multibooru",
+            common::USER_AGENT,
         )
         .send()
         .await
@@ -62,7 +62,7 @@ pub async fn new_tags(sender: impl PersistenceSender) {
             ))
             .header(
                 "User-Agent",
-                "multibooru-scraper/0.1.0, +https://github.com/danya02/multibooru",
+                common::USER_AGENT,
             )
             .send()
             .await

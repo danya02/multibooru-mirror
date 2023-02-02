@@ -12,3 +12,6 @@ tokio = { version = "1.0", features = ["full"] }
 reqwest = { version = "0.11", features = ["json"] }
 log = "0.4"
 serde_json = "1.0"
+common = { path = "../common" }
+tracing = "0.1.37"
+media_assets = { path = "../media_assets" }

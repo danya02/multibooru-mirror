@@ -6,4 +6,5 @@ members = [
     "common",
     "persistence",
     "scraper",
+    "media_assets",
 ]

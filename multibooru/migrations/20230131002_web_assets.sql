@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS web_assets (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    url TEXT NOT NULL,
+    sha256 BLOB(32) NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS web_assets_url ON web_assets (url);
