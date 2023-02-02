@@ -4,8 +4,31 @@ use serde::{Deserialize, Serialize};
 
 make_entity_state! {
     Entity, Record {
-        Post: u64 => PostState,
-        Tag: u64 => TagState,
+        Post: i64 => PostState,
+        Tag: i64 => TagState,
+    }
+}
+
+impl Entity {
+    /// Get the ID of the type of entity this is.
+    /// This is used for database lookups and storage,
+    /// so this must not change between versions.
+    /// This should also match between different boorus:
+    /// for example, a post on Danbooru and a post on Gelbooru
+    /// should have the same type ID.
+    pub fn type_id(&self) -> u32 {
+        match self {
+            Entity::Post(_) => 1,
+            Entity::Tag(_) => 2,
+        }
+    }
+
+    /// Get the booru ID of this entity.
+    pub fn booru_id(&self) -> i64 {
+        match self {
+            Entity::Post(id) => *id,
+            Entity::Tag(id) => *id,
+        }
     }
 }
 

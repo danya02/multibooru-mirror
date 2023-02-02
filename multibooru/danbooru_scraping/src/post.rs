@@ -12,10 +12,7 @@ pub async fn new_posts(sender: impl PersistenceSender, file_download_sender: Med
     // First, get the last post ID as a starting point.
     let response = client
         .get("https://danbooru.donmai.us/posts.json?limit=1")
-        .header(
-            "User-Agent",
-            common::USER_AGENT,
-        )
+        .header("User-Agent", common::USER_AGENT)
         .send()
         .await
         .expect("Network error while getting the last post ID."); // TODO: retry this with exponential backoff
@@ -65,10 +62,7 @@ pub async fn new_posts(sender: impl PersistenceSender, file_download_sender: Med
             .get(&format!(
                 "https://danbooru.donmai.us/posts.json?page=a{last_post_id}",
             ))
-            .header(
-                "User-Agent",
-                common::USER_AGENT,
-            )
+            .header("User-Agent", common::USER_AGENT)
             .send()
             .await
             .expect("Network error while getting new posts.") // TODO: retry this with exponential backoff
@@ -110,7 +104,8 @@ pub async fn new_posts(sender: impl PersistenceSender, file_download_sender: Med
         // Now we can download the media assets for the posts we just got.
         let mut dl_results = vec![];
         for (id, url) in post_urls {
-            let dl_result = media_assets::scraping::enqueue_download(&url, &file_download_sender).await;
+            let dl_result =
+                media_assets::scraping::enqueue_download(&url, &file_download_sender).await;
             dl_results.push((id, dl_result));
         }
         // Await all the downloads.
@@ -120,7 +115,11 @@ pub async fn new_posts(sender: impl PersistenceSender, file_download_sender: Med
                     tracing::debug!("Downloaded media for post {}.", post_id);
                 }
                 Err(dl_error) => {
-                    tracing::error!("Error while downloading media for post {}: {:?}", post_id, dl_error);
+                    tracing::error!(
+                        "Error while downloading media for post {}: {:?}",
+                        post_id,
+                        dl_error
+                    );
                 }
             }
         }

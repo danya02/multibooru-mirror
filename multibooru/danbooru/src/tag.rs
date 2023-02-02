@@ -7,7 +7,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 /// In particular, posts are identified by their tags' names.
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Tag {
-    pub id: u64,
+    pub id: i64,
     pub name: String,
     pub post_count: u64,
     pub category: TagCategory,

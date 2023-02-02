@@ -61,9 +61,15 @@ macro_rules! make_entity_state {
 
         impl From<$state_name> for $name {
             fn from(state: $state_name) -> Self {
-                match state {
+                state.get_entity()
+            }
+        }
+
+        impl $state_name {
+            pub fn get_entity(&self) -> $name {
+                match self {
                     $(
-                        $state_name::$assoc{id, ..} => $name::$assoc(id),
+                        $state_name::$assoc{ id, .. } => $name::$assoc(*id),
                     )*
                 }
             }

@@ -5,15 +5,22 @@ use futures_util::StreamExt;
 use sha2::Digest;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
-use tokio::sync::oneshot;
 use tokio::sync::mpsc::Receiver;
+use tokio::sync::oneshot;
 
 pub type MediaDownloadResult = Result<MediaAsset, MediaDownloadError>;
-pub type MediaDownloadSender = tokio::sync::mpsc::Sender<(String, tokio::sync::oneshot::Sender<MediaDownloadResult>)>;
+pub type MediaDownloadSender =
+    tokio::sync::mpsc::Sender<(String, tokio::sync::oneshot::Sender<MediaDownloadResult>)>;
 
-pub async fn enqueue_download(url: &str, sender: &MediaDownloadSender) -> oneshot::Receiver<MediaDownloadResult> {
+pub async fn enqueue_download(
+    url: &str,
+    sender: &MediaDownloadSender,
+) -> oneshot::Receiver<MediaDownloadResult> {
     let (tx, rx) = oneshot::channel();
-    sender.send((url.to_string(), tx)).await.expect("Failed to send media asset download request to downloader.");
+    sender
+        .send((url.to_string(), tx))
+        .await
+        .expect("Failed to send media asset download request to downloader.");
     rx
 }
 

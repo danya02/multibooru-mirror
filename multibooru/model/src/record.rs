@@ -25,6 +25,29 @@ pub enum BooruRecord {
     Danbooru(danbooru::record::Record),
 }
 
+impl BooruRecord {
+    /// Get the ID of the type of booru this is.
+    /// This must not change between versions.
+    pub fn type_id(&self) -> u32 {
+        match self {
+            BooruRecord::Danbooru(_) => 1,
+        }
+    }
+    /// Get the type of entity this record is about.
+    pub fn entity_type_id(&self) -> u32 {
+        match self {
+            BooruRecord::Danbooru(record) => record.get_entity().type_id(),
+        }
+    }
+
+    /// Get the booru ID of the entity this record is about.
+    pub fn entity_id(&self) -> i64 {
+        match self {
+            BooruRecord::Danbooru(record) => record.get_entity().booru_id(),
+        }
+    }
+}
+
 impl From<danbooru::record::Record> for BooruRecord {
     fn from(record: danbooru::record::Record) -> Self {
         BooruRecord::Danbooru(record)

@@ -30,7 +30,7 @@ impl PileOfFiles {
 #[async_trait::async_trait]
 impl Persistence for PileOfFiles {
     type Sender = PileOfFilesSender;
-    fn init(&mut self) {
+    async fn init(&mut self) {
         // Since this backend doesn't use any background threads, there's nothing to do here.
         // You could even not call this,
         // but other backends should panic if this isn't called.
@@ -65,7 +65,7 @@ impl PersistenceSender for PileOfFilesSender {
                 Err(PersistenceError::ShuttingDown)
             } else {
                 let snow = Snowflake::new();
-                log::debug!("Writing record {record:?} as {snow}.json");
+                tracing::debug!("Writing record {record:?} as {snow}.json");
                 let mut file = tokio::fs::File::create(this.directory.join(format!("{snow}.json")))
                     .await
                     .map_err(|e| {

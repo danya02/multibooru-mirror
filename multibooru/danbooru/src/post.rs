@@ -15,7 +15,7 @@ pub enum Rating {
 
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Post {
-    pub id: u64,
+    pub id: i64,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>, // if this could be null, this means that no updates since initial,
     // so this should copy created_at
@@ -25,35 +25,40 @@ pub struct Post {
     #[serde(alias = "tag_string_general")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
-        serialize_with = "serialize_tag_string"
+        serialize_with = "serialize_tag_string",
+        default
     )]
     pub tags_general: Vec<String>,
 
     #[serde(alias = "tag_string_artist")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
-        serialize_with = "serialize_tag_string"
+        serialize_with = "serialize_tag_string",
+        default
     )]
     pub tags_artist: Vec<String>,
 
-    #[serde(alias = "tag_string_copyright")]
+    #[serde(alias = "tag_string_cto_stringopyright")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
-        serialize_with = "serialize_tag_string"
+        serialize_with = "serialize_tag_string",
+        default
     )]
     pub tags_copyright: Vec<String>,
 
     #[serde(alias = "tag_string_character")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
-        serialize_with = "serialize_tag_string"
+        serialize_with = "serialize_tag_string",
+        default
     )]
     pub tags_character: Vec<String>,
 
     #[serde(alias = "tag_string_meta")]
     #[serde(
         deserialize_with = "deserialize_tag_string",
-        serialize_with = "serialize_tag_string"
+        serialize_with = "serialize_tag_string",
+        default
     )]
     pub tags_meta: Vec<String>,
 
@@ -61,7 +66,8 @@ pub struct Post {
     // This is supposed to be redundant, so we can use it to check that no tags are lost in the process.
     #[serde(
         deserialize_with = "deserialize_tag_string",
-        serialize_with = "serialize_tag_string"
+        serialize_with = "serialize_tag_string",
+        default
     )]
     #[serde(alias = "tag_string")]
     pub tags: Vec<String>,
@@ -88,8 +94,8 @@ pub struct Post {
     pub score: i32,
 
     // these are not documented but appear in public responses
-    pub up_score: Option<u32>,
-    pub down_score: Option<u32>,
+    pub up_score: Option<i32>,
+    pub down_score: Option<i32>, // This is always negative.
 
     pub fav_count: u32,
 

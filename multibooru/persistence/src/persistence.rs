@@ -8,7 +8,7 @@ pub trait Persistence {
 
     /// Initialize any background threads needed by this backend.
     /// This function should be called before any other function.
-    fn init(&mut self);
+    async fn init(&mut self);
 
     /// Get a sender for this backend.
     /// This function can be called multiple times,
@@ -53,11 +53,19 @@ pub trait PersistenceSender: Sync + Send {
 
 pub type PersistenceResult = Result<(), PersistenceError>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum PersistenceError {
     /// The backend is shutting down.
     /// No new records will be accepted.
     ShuttingDown,
     /// Unknown error.
     Unknown(String),
+
+    /// While waiting for one of the branches of the Duplicater to finish,
+    /// they dropped their sender.
+    /// This is a bug in the backend implementation.
+    DuplicaterSenderDropped,
+
+    /// There was an error putting the record in the database.
+    DatabaseError(sqlx::Error),
 }

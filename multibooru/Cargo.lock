@@ -1011,11 +1011,12 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "common",
- "log",
  "model",
  "serde",
  "serde_json",
+ "sqlx",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
