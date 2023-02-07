@@ -20,7 +20,7 @@ pub async fn new_tags(sender: impl PersistenceSender) {
         .text()
         .await
         .expect("The response was not a valid string.");
-    log::debug!("Got response from Danbooru: {:?}", text);
+    tracing::debug!("Got response from Danbooru: {:?}", text);
 
     let last_tag = serde_json::from_str::<Vec<danbooru::Tag>>(&text)
         .expect("The response was not a valid JSON array of tags.")
@@ -95,7 +95,7 @@ pub async fn new_tags(sender: impl PersistenceSender) {
         }
 
         // Wait a bit before getting the next batch of tags.
-        log::debug!("Waiting for next tags...");
+        tracing::debug!("Waiting for next tags...");
         tokio::time::sleep(std::time::Duration::from_secs(30)).await;
     }
 }

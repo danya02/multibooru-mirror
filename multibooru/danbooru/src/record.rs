@@ -1,4 +1,4 @@
-use crate::{post::Post, tag::Tag};
+use crate::{post::Post, tag::Tag, post_version::PostVersion};
 use common::make_entity_state;
 use serde::{Deserialize, Serialize};
 
@@ -6,6 +6,7 @@ make_entity_state! {
     Entity, Record {
         Post: i64 => PostState,
         Tag: i64 => TagState,
+        PostVersion: i64 => PostVersion,
     }
 }
 
@@ -20,6 +21,7 @@ impl Entity {
         match self {
             Entity::Post(_) => 1,
             Entity::Tag(_) => 2,
+            Entity::PostVersion(_) => 3,
         }
     }
 
@@ -28,6 +30,7 @@ impl Entity {
         match self {
             Entity::Post(id) => *id,
             Entity::Tag(id) => *id,
+            Entity::PostVersion(id) => *id,
         }
     }
 }

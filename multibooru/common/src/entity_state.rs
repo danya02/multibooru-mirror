@@ -69,7 +69,7 @@ macro_rules! make_entity_state {
             pub fn get_entity(&self) -> $name {
                 match self {
                     $(
-                        $state_name::$assoc{ id, .. } => $name::$assoc(*id),
+                        $state_name::$assoc{ id, .. } => $name::$assoc((*id).clone()),
                     )*
                 }
             }

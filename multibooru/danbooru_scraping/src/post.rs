@@ -21,7 +21,7 @@ pub async fn new_posts(sender: impl PersistenceSender, file_download_sender: Med
         .text()
         .await
         .expect("The response was not a valid string.");
-    log::debug!("Got response from Danbooru: {:?}", text);
+    tracing::debug!("Got response from Danbooru: {:?}", text);
 
     let last_post = serde_json::from_str::<Vec<danbooru::Post>>(&text)
         .expect("The response was not a valid JSON array of posts.")
@@ -125,7 +125,7 @@ pub async fn new_posts(sender: impl PersistenceSender, file_download_sender: Med
         }
 
         // Wait a bit before getting the next batch of posts.
-        log::debug!("Waiting for next posts...");
+        tracing::debug!("Waiting for next posts...");
         tokio::time::sleep(std::time::Duration::from_secs(30)).await;
     }
 }
