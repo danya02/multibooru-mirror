@@ -17,6 +17,7 @@ pub async fn enqueue_download(
     sender: &MediaDownloadSender,
 ) -> oneshot::Receiver<MediaDownloadResult> {
     let (tx, rx) = oneshot::channel();
+    tracing::debug!("Enqueuing download of media asset: {}", url);
     sender
         .send((url.to_string(), tx))
         .await
@@ -32,12 +33,18 @@ pub async fn download_files(mut recv: Receiver<(String, oneshot::Sender<MediaDow
     // Future calls to env::var("MEDIA_ROOT").unwrap() will not panic because we just checked that it exists.
 
     let conn = Database::new().await;
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .user_agent(common::USER_AGENT);
+    let client = common::with_media_proxy(client);
+    let client = client.build().unwrap();
 
+    
     // Loop and wait for messages
     while let Some((url, sender)) = recv.recv().await {
+        tracing::debug!("Received download request for media asset: {}", url);
         // Before downloading, check if the file already exists in the database
         if let Some(media_asset) = conn.get_media_asset_by_url(&url).await {
+            tracing::debug!("Media asset already exists in database: {} as {:?}", url, media_asset);
             // If it does, send the result and continue
             sender.send(Ok(media_asset)).unwrap_or_else(|_| {
                 tracing::warn!("Failed to send already existing media asset to receiver.");
@@ -46,9 +53,11 @@ pub async fn download_files(mut recv: Receiver<(String, oneshot::Sender<MediaDow
         };
         // If it doesn't, first download the file.
         // As we do, we calculate its hash and size.
+        tracing::debug!("Media asset does not exist in database, downloading: {}", url);
         let media_asset = match download_file(&client, &url).await {
             Ok(media_asset) => media_asset,
             Err(err) => {
+                tracing::error!("Failed to download file: {err:?}");
                 sender.send(Err(err)).unwrap_or_else(|_| {
                     tracing::warn!("Failed to send media asset download error to receiver.");
                 });
@@ -57,9 +66,10 @@ pub async fn download_files(mut recv: Receiver<(String, oneshot::Sender<MediaDow
         };
 
         // Then, add it to the database.
+        tracing::debug!("Media asset downloaded, adding to database: {}", url);
         let result = try_adding_media_asset_to_db(&url, media_asset, &conn).await;
         if let Err(err) = result {
-            tracing::error!("Failed to download file: {err:?}");
+            tracing::error!("Failed to add media asset to db: {err:?}");
             sender.send(Err(err)).unwrap_or_else(|_| {
                 tracing::warn!("Failed to send media asset download error to receiver.");
             });
@@ -125,13 +135,19 @@ async fn download_file(
     let extension = url.split('.').last().unwrap_or("");
     let media_type = MediaType::from_extension(extension);
 
+    // Construct the MediaAsset
+    let media_asset = MediaAsset {
+        hash,
+        size,
+        media_type,
+    };
+
+
     // Move the file to its final location
     // (and ensure that it exists)
     let mut media_root: PathBuf = env::var("MEDIA_ROOT").unwrap().into();
-    media_root.push(hex::encode(&hash[0..2]));
-    media_root.push(hex::encode(&hash[2..4]));
-    media_root.push(hex::encode(hash));
-    media_root.set_extension(media_type.extension());
+    let rel_media_path = media_asset.path();
+    media_root.push(rel_media_path);
     tokio::fs::create_dir_all(media_root.parent().unwrap())
         .await
         .map_err(MediaDownloadError::FileManagementError)?;
@@ -139,12 +155,6 @@ async fn download_file(
         .await
         .map_err(MediaDownloadError::FileManagementError)?;
 
-    // Construct the MediaAsset
-    let media_asset = MediaAsset {
-        hash,
-        size,
-        media_type,
-    };
 
     Ok(media_asset)
 }

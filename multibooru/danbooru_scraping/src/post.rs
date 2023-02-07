@@ -6,13 +6,14 @@ use persistence::PersistenceSender;
 
 /// Task that will loop forever, getting new posts from Danbooru and submitting them to the persistence layer.
 pub async fn new_posts(sender: impl PersistenceSender, file_download_sender: MediaDownloadSender) {
-    let client = reqwest::Client::new();
-    // Set client header
+    let client = reqwest::Client::builder();
+    let client = common::proxy_maker::with_proxy(client);
+    let client = client.user_agent(common::USER_AGENT);
+    let client = client.build().expect("Failed to build the HTTP client.");
 
     // First, get the last post ID as a starting point.
     let response = client
         .get("https://danbooru.donmai.us/posts.json?limit=1")
-        .header("User-Agent", common::USER_AGENT)
         .send()
         .await
         .expect("Network error while getting the last post ID."); // TODO: retry this with exponential backoff
@@ -62,7 +63,6 @@ pub async fn new_posts(sender: impl PersistenceSender, file_download_sender: Med
             .get(&format!(
                 "https://danbooru.donmai.us/posts.json?page=a{last_post_id}",
             ))
-            .header("User-Agent", common::USER_AGENT)
             .send()
             .await
             .expect("Network error while getting new posts.") // TODO: retry this with exponential backoff

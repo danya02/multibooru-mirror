@@ -77,7 +77,7 @@ pub struct Post {
     pub parent_id: Option<u64>,
     pub source: Option<String>,
 
-    #[serde(deserialize_with = "deserialize_md5", serialize_with = "serialize_md5")]
+    #[serde(deserialize_with = "deserialize_md5", serialize_with = "serialize_md5", default)]
     /// This can be missing. For example, it is missing on posts that have `is_banned=true`.
     /// It has been seen on posts that were automatically rejected, because they come from banned sources (`banned_artist`).
     pub md5: Option<[u8; 16]>,

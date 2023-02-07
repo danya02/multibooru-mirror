@@ -13,3 +13,5 @@ persistence = { path = "../persistence" }
 danbooru_scraping = { path = "../danbooru_scraping" }
 dotenvy = "0.15"
 media_assets = { path = "../media_assets" }
+tracing-subscriber = "0.3.16"
+tracing-log = "0.1.3"

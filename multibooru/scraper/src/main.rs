@@ -3,7 +3,9 @@ use persistence::Persistence;
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().unwrap();
-    env_logger::init();
+    //env_logger::init();
+    tracing_subscriber::fmt::init();
+    //tracing_log::LogTracer::init().unwrap();
     log::info!("Starting up...");
 
     let mut persistence = persistence::make_persistence().await;
