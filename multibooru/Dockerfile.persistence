@@ -1,0 +1,30 @@
+FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
+WORKDIR /app
+
+FROM chef AS planner
+RUN mkdir /common
+COPY . /app
+WORKDIR /app/persistence
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder 
+WORKDIR /app/persistence
+COPY --from=planner /app/persistence/recipe.json recipe.json
+WORKDIR /app
+COPY ./common ./common
+WORKDIR /app/persistence
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --recipe-path recipe.json
+# Build application
+COPY persistence/ .
+RUN cargo build --release
+#RUN ldd ./target/release/persistence && exit 1
+
+FROM debian:bookworm
+WORKDIR /app
+COPY --from=builder /app/persistence/target/release/persistence /app/persistence
+#RUN ldd ./persistence && exit 1
+#RUN apt update
+#RUN apt install -y strace
+#RUN strace ./persistence && echo "DONE" && exit 1
+ENTRYPOINT ["/app/persistence"]

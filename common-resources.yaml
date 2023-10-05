@@ -1,0 +1,14 @@
+# This queue is where we'll put new records and read them from.
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: new-records
+  namespace: imageboards
+spec:
+  name: new-records 
+  vhost: "/"
+  type: quorum
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: message-broker

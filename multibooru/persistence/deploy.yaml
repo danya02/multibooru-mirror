@@ -1,0 +1,60 @@
+# This user is for the persistence process
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: persistence-reader
+  namespace: imageboards
+spec:
+  rabbitmqClusterReference:
+    name: message-broker
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: persistence-reader-permission
+  namespace: imageboards
+spec:
+  vhost: "/"
+  userReference:
+    name: "persistence-reader"  # refers to name of User resource
+  permissions:
+    write: ".*"
+    configure: ""
+    read: ".*"
+  rabbitmqClusterReference:
+    name: message-broker
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: persistence-reader
+  namespace: imageboards
+  labels:
+    app: persistence-reader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: persistence-reader
+  template:
+    metadata:
+      labels:
+        app: persistence-reader
+    spec:
+      containers:
+        - name: persistence-reader
+          image: registry.danya02.ru/danya02/imageboards/persistence:latest
+          imagePullPolicy: Always
+          env:
+            - name: AMQP_SERVER
+              value: message-broker
+            - name: AMQP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: persistence-reader-user-credentials
+                  key: username
+            - name: AMQP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: persistence-reader-user-credentials
+                  key: password
