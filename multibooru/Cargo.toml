@@ -1,10 +1,5 @@
 [workspace]
-
+resolver = "2"
 members = [
-    "danbooru",
-    "model",
-    "common",
-    "persistence",
-    "scraper",
-    "media_assets",
+    "common/data-types"
 ]

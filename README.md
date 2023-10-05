@@ -1,4 +1,8 @@
 # multibooru-mirror
 
-[![Documentation Status](https://readthedocs.org/projects/multibooru-mirror/badge/?version=latest)](https://multibooru-mirror.readthedocs.io/en/latest/?badge=latest)
-[![Rust test status](https://github.com/danya02/multibooru-mirror/actions/workflows/rust.yml/badge.svg)](https://github.com/danya02/multibooru-mirror/actions/workflows/rust.yml)
+Architecture:
+
+- there is a RabbitMQ server acting as the internal message queue
+- acqisition processes periodically scrape boorus and create `Record` messages
+- the `Record`s are sent to the RabbitMQ, or stored locally until it becomes available
+- a single persistence process is responsible from drawing `Record`s from RabbitMQ and storing them in a central database
