@@ -1,7 +1,7 @@
 all: build redeploy
 
 build:
-	cd .. && docker buildx build --platform linux/arm64,linux/amd64 -f Dockerfile.persistence . --tag registry.danya02.ru/danya02/imageboards/persistence:latest --builder local --push
+	cd ../../.. && docker buildx build --platform linux/arm64,linux/amd64 -f Dockerfile.rule34-comment-writer . --tag registry.danya02.ru/danya02/imageboards/rule34-comment-writer:latest --builder local --push
 
 redeploy: delete deploy
 
@@ -12,7 +12,8 @@ delete:
 	kubectl delete -f deploy.yaml ; exit 0
 
 log:
-	kubectl logs -f deployment/persistence-reader
+	kubectl logs -f deployment/rule34-comment-writer
+
 
 initialize_builder:
 	docker buildx create --bootstrap --name=local --driver=docker-container --platform=linux/arm64,linux/amd64

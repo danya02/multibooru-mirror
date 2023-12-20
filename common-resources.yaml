@@ -1,3 +1,22 @@
+# This cluster will store imageboard data
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+    name: message-broker
+    namespace: imageboards
+---
+# This vhost is used by default
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: default-vhost
+  namespace: imageboards
+spec:
+  name: "/"
+  defaultQueueType: quorum
+  rabbitmqClusterReference:
+    name: message-broker
+---
 # This queue is where we'll put new records and read them from.
 apiVersion: rabbitmq.com/v1beta1
 kind: Queue

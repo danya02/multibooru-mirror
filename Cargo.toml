@@ -3,4 +3,5 @@ resolver = "2"
 members = [
     "multibooru/common/data-types",
     "multibooru/persistence",
+    "multibooru/acquisition/rule34/comment",
 ]

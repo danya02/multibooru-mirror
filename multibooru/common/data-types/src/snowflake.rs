@@ -9,10 +9,10 @@ use serde::{Deserialize, Serialize};
 /// a 64-bit integer that is unique across all entities,
 /// that encodes the time of creation.
 ///
-/// The first 48 bits are the timestamp in milliseconds since the Unix epoch.
-/// This gives a range of about 8920 years.
+/// The first 48 bits are the timestamp in milliseconds since the Unix epoch, and the top bit is expected to be zero.
+/// This gives a range of about 4460 years, and the scheme will stop working on October 17, 6429.
 ///
-/// The next 16 bits are reserved, and are currently set to 0.
+/// The next 16 bits are reserved for ensuring uniqueness. Their meaning is not yet defined.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Default,
 )]
@@ -21,20 +21,33 @@ pub struct Snowflake(i64);
 impl Snowflake {
     /// Create a new Snowflake.
     ///
-    /// This function is not thread-safe:
-    /// if two threads call it at the same time,
-    /// they can get the same Snowflake.
-    pub fn new() -> Self {
+    /// Accepts an argument which is used to set the uniqueness bits of the snowflake.
+    pub fn new(uid: u16) -> Self {
         let now = std::time::SystemTime::now();
         let since_epoch = now
             .duration_since(std::time::UNIX_EPOCH)
             .expect("Time is before Unix epoch.");
         let millis = since_epoch.as_millis();
-        let sn_id = millis << 16;
+        let sn_id = millis << 16 | uid as u128;
         let sn_id = sn_id
             .try_into()
             .expect("Time is too far in the future to fit in an i64-based Snowflake.");
         Snowflake(u64_to_i64(sn_id))
+    }
+
+    /// Replace the low bits with the provided value.
+    pub fn with_low_bits(self, new_uid: u16) -> Self {
+        let mut value = self.0;
+        let mask = i64::MAX ^ 0x1ff; // all bits set, except for the last 16
+        value = value & mask; // clears the bottom 16 bits
+        value = value | (new_uid as i64); // assigns them based on the given value
+        Self(value)
+    }
+
+    /// Get the time that this snowflake corresponds to.
+    pub fn as_time(&self) -> std::time::SystemTime {
+        let millis_since_epoch = self.0 >> 16;
+        std::time::UNIX_EPOCH + std::time::Duration::from_millis(millis_since_epoch as u64)
     }
 }
 
@@ -76,5 +89,25 @@ impl FromStr for Snowflake {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.parse().map(Snowflake)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::time::Duration;
+
+    use super::*;
+
+    #[test]
+    fn date_is_now() {
+        let sn = Snowflake::new(0);
+        assert!(sn.as_time().elapsed().unwrap() < Duration::from_millis(1))
+    }
+
+    #[test]
+    fn date_preserved_over_low_bits() {
+        let sn = Snowflake::new(0);
+        let new_sn = sn.clone().with_low_bits(u16::MAX);
+        assert_eq!(sn.as_time(), new_sn.as_time());
     }
 }

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use self::{resource_locator::MediaResourceLocator, state::MediaState};
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Hash)]
 pub struct MediaRecord {
     pub locator: MediaResourceLocator,
     pub state: MediaState,

@@ -1,0 +1,20 @@
+[package]
+name = "comment"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.11.22", features = ["socks", "rustls", "rustls-tls", "rustls-tls-webpki-roots"], default-features = false }
+tokio = { version = "1.32.0", features = ["full"] }
+data-types = { path = "../../../common/data-types" }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"
+async-trait = "0.1.73"
+amqprs = { version = "1.4.1", features = ["traces"] }
+serde = { version = "1.0.188", features = ["derive"] }
+rand = "0.8.5"
+serde-xml-rs = "0.6.0"
+chrono = "0.4.31"
+serde_json = "1.0.107"

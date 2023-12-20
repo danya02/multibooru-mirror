@@ -41,11 +41,22 @@ spec:
       labels:
         app: persistence-reader
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - danya02.ru
       containers:
         - name: persistence-reader
           image: registry.danya02.ru/danya02/imageboards/persistence:latest
           imagePullPolicy: Always
           env:
+            - name: RUST_LOG
+              value: debug
             - name: AMQP_SERVER
               value: message-broker
             - name: AMQP_USER
@@ -58,3 +69,15 @@ spec:
                 secretKeyRef:
                   name: persistence-reader-user-credentials
                   key: password
+            - name: DATABASE_PATH
+              value: /persistence-dir/multibooru-entity-data.sqlite3
+          volumeMounts:
+            - name: data-root
+              mountPath: /persistence-dir
+      volumes:
+        - name: data-root
+          # persistentVolumeClaim:
+          #   claimName: multibooru-entity-data
+          hostPath:
+            path: /home/danya/kube/imageboards/data
+            type: Directory
