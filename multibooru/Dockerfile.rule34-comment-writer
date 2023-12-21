@@ -38,9 +38,9 @@ RUN --mount=type=cache,target=/usr/local/cargo/git,id=${TARGETARCH} \
     cargo build --release --target $(cat /rust_target.txt) && \
     cargo strip --target $(cat /rust_target.txt) && \
     # Copy executable out of the cache so it is available in the final image.
-    cp target/$(cat /rust_target.txt)/release/comment /comment
+    cp target/$(cat /rust_target.txt)/release/acquisition-rule34-comment /exec
 
 FROM --platform=$TARGETPLATFORM debian:bookworm
 WORKDIR /app
-COPY --from=builder /comment /app/comment
-ENTRYPOINT ["/app/comment"]
+COPY --from=builder /exec /app/exec
+ENTRYPOINT ["/app/exec"]

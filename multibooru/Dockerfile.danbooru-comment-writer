@@ -26,27 +26,19 @@ RUN case "$TARGETARCH" in \
       *) echo "unknown target: $TARGETARCH" ; exit 1 ;; \
     esac
 
-
-# WORKDIR /
-# RUN wget https://musl.cc/arm-linux-musleabihf-cross.tgz 
-# RUN tar xzvf arm-linux-musleabihf-cross.tgz
-# RUN cp -r arm-linux-musleabihf-cross/* /usr && rm -fr arm-linux-musleabihf-cross*
-
-
 COPY . /app
 
-WORKDIR /app/persistence
+WORKDIR /app/acquisition/danbooru/comment
 RUN --mount=type=cache,target=/usr/local/cargo/git,id=${TARGETARCH} \
     --mount=type=cache,target=/usr/local/cargo/registry,id=${TARGETARCH} \
-    --mount=type=cache,target=/app/persistence/target,id=${TARGETARCH} \
+    --mount=type=cache,target=/app/acquisition/danbooru/comment/target,id=${TARGETARCH} \
     echo "Current compilation cache size:" && \
-    du -csh /app/persistence/target /usr/local/cargo/registry /usr/local/cargo/git && \
-    export RUSTFLAGS="$RUSTFLAGS  -C linker=$(cat /rust_linker.txt)" && \
+    du -csh /app/acquisition/danbooru/comment/target /usr/local/cargo/registry /usr/local/cargo/git && \
+    export RUSTFLAGS="$RUSTFLAGS -C linker=$(cat /rust_linker.txt)" && \
     cargo build --release --target $(cat /rust_target.txt) && \
     cargo strip --target $(cat /rust_target.txt) && \
     # Copy executable out of the cache so it is available in the final image.
-    cp target/$(cat /rust_target.txt)/release/persistence /exec
-
+    cp target/$(cat /rust_target.txt)/release/acquisition-danbooru-comment /exec
 
 FROM --platform=$TARGETPLATFORM debian:bookworm
 WORKDIR /app

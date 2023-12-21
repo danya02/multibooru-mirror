@@ -54,7 +54,8 @@ async fn main() {
 
     println!("Performed binding!");
 
-    let args = BasicConsumeArguments::new("new-records", "imageboards.persistence-reader");
+    let mut args = BasicConsumeArguments::new("new-records", "imageboards.persistence-reader");
+    args.exclusive(true);
 
     println!("Connecting to database on {database_path:?}");
     // Ensure that there exists a file at that path.

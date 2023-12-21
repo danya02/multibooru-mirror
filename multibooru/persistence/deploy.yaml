@@ -56,7 +56,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: RUST_LOG
-              value: debug
+              value: info
             - name: AMQP_SERVER
               value: message-broker
             - name: AMQP_USER

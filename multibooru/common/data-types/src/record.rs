@@ -6,7 +6,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    record_types::{media::MediaRecord, rule34::Rule34Record},
+    record_types::{danbooru::DanbooruRecord, media::MediaRecord, rule34::Rule34Record},
     Snowflake,
 };
 
@@ -38,12 +38,16 @@ pub enum RecordData {
 
     /// This record describes an entity that comes from Rule34.xxx.
     Rule34(Rule34Record),
+
+    /// This record describes an entity that comes from Danbooru.donmai.us.
+    Danbooru(DanbooruRecord),
 }
 
 #[non_exhaustive]
 pub enum RecordType {
     Media = 1,
     Rule34 = 2,
+    Danbooru = 3,
 }
 
 #[non_exhaustive]
@@ -59,6 +63,7 @@ impl RecordData {
         match self {
             RecordData::Media(_) => RecordType::Media,
             RecordData::Rule34(_) => RecordType::Rule34,
+            RecordData::Danbooru(_) => RecordType::Danbooru,
         }
     }
 
@@ -73,6 +78,7 @@ impl RecordData {
         match self {
             RecordData::Media(record) => record.get_state() as u32,
             RecordData::Rule34(record) => record.entity_type() as u32,
+            RecordData::Danbooru(record) => record.entity_type() as u32,
         }
     }
 
@@ -87,6 +93,7 @@ impl RecordData {
                 MediaResourceLocator::Danbooru { .. } => BooruId::Danbooru,
             },
             RecordData::Rule34(_) => BooruId::Rule34,
+            RecordData::Danbooru(_) => BooruId::Danbooru,
         }
     }
 
@@ -100,6 +107,7 @@ impl RecordData {
         match self {
             RecordData::Media(record) => record.locator.true_hash_as_u64(),
             RecordData::Rule34(record) => record.entity_id(),
+            RecordData::Danbooru(record) => record.entity_id(),
         }
     }
 }

@@ -1,0 +1,64 @@
+# This user is for the comment process
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: danbooru-comment-writer
+  namespace: imageboards
+spec:
+  rabbitmqClusterReference:
+    name: message-broker
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: danbooru-comment-writer-permission
+  namespace: imageboards
+spec:
+  vhost: "/"
+  userReference:
+    name: "danbooru-comment-writer"  # refers to name of User resource
+  permissions:
+    write: ".*"
+    configure: ""
+    read: ".*"
+  rabbitmqClusterReference:
+    name: message-broker
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: danbooru-comment-writer
+  namespace: imageboards
+  labels:
+    app: danbooru-comment-writer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: danbooru-comment-writer
+  template:
+    metadata:
+      labels:
+        app: danbooru-comment-writer
+    spec:
+      containers:
+        - name: danbooru-comment-writer
+          image: registry.danya02.ru/danya02/imageboards/danbooru-comment-writer:latest
+          imagePullPolicy: Always
+          env:
+            - name: RUST_LOG
+              value: debug
+            - name: AMQP_SERVER
+              value: message-broker
+            - name: AMQP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: danbooru-comment-writer-user-credentials
+                  key: username
+            - name: AMQP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: danbooru-comment-writer-user-credentials
+                  key: password
+            - name: PROXY_URL
+              value: socks5://shadowsocks-client-service:1080

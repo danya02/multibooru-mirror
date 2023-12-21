@@ -4,4 +4,5 @@ members = [
     "multibooru/common/data-types",
     "multibooru/persistence",
     "multibooru/acquisition/rule34/comment",
+    "multibooru/acquisition/danbooru/comment",
 ]

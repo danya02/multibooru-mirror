@@ -3,6 +3,42 @@
 version = 3
 
 [[package]]
+name = "acquisition-danbooru-comment"
+version = "0.1.0"
+dependencies = [
+ "amqprs",
+ "async-trait",
+ "chrono",
+ "data-types",
+ "rand",
+ "reqwest",
+ "serde",
+ "serde-xml-rs",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "acquisition-rule34-comment"
+version = "0.1.0"
+dependencies = [
+ "amqprs",
+ "async-trait",
+ "chrono",
+ "data-types",
+ "rand",
+ "reqwest",
+ "serde",
+ "serde-xml-rs",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -188,24 +224,6 @@ dependencies = [
  "serde",
  "wasm-bindgen",
  "windows-targets",
-]
-
-[[package]]
-name = "comment"
-version = "0.1.0"
-dependencies = [
- "amqprs",
- "async-trait",
- "chrono",
- "data-types",
- "rand",
- "reqwest",
- "serde",
- "serde-xml-rs",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
