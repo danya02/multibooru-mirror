@@ -84,8 +84,19 @@ async fn run_new_comment_loop(connection: Connection, client: Client) {
     println!("Performed binding for new comment channel");
 
     let mut latest_update_sent = DateTime::from(SystemTime::UNIX_EPOCH);
+    let mut delay_secs = 30.0;
+
+    let mut error_count = 0;
+    let mut count_error = || {
+        error_count += 1;
+        tracing::error!("Error detected in new loop (current count: {error_count})");
+        if error_count > 5 {
+            panic!("Too many errors in new loop!")
+        }
+    };
+
     loop {
-        let duration = rand::thread_rng().gen_range(25.0..35.0);
+        let duration = rand::thread_rng().gen_range(delay_secs - 5.0..delay_secs + 5.0);
         let duration = std::time::Duration::from_secs_f32(duration);
         tracing::debug!("Sleeping for {duration:?}");
         tokio::time::sleep(duration).await;
@@ -99,6 +110,7 @@ async fn run_new_comment_loop(connection: Connection, client: Client) {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while retrieving comments: {e}");
+                count_error();
                 continue;
             }
         };
@@ -107,6 +119,7 @@ async fn run_new_comment_loop(connection: Connection, client: Client) {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while parsing comments as text: {e}");
+                count_error();
                 continue;
             }
         };
@@ -116,6 +129,7 @@ async fn run_new_comment_loop(connection: Connection, client: Client) {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while parsing comments JSON: {e}");
+                count_error();
                 continue;
             }
         };
@@ -163,6 +177,7 @@ async fn run_new_comment_loop(connection: Connection, client: Client) {
                 Ok(v) => v,
                 Err(e) => {
                     tracing::error!("Error while encoding comment to be sent: {e}");
+                    count_error();
                     continue;
                 }
             };
@@ -185,6 +200,17 @@ async fn run_new_comment_loop(connection: Connection, client: Client) {
         }
         tracing::debug!("Published {published} new comments");
         tracing::debug!("Current latest update for new: {latest_update_sent}");
+
+        // Update the delay:
+        // if zero comments were received, increase the time (up to a maximum of 1800 seconds),
+        // if more than one comment was received, decrease the time (down to a minimum of 10 seconds).
+        if published == 0 {
+            delay_secs += 5.0;
+        }
+        if published > 1 {
+            delay_secs -= 5.0;
+        }
+        delay_secs = delay_secs.min(1800.0).max(10.0);
     }
 }
 
@@ -213,8 +239,19 @@ async fn run_deleted_comment_loop(connection: Connection, client: Client) {
     println!("Performed binding for deleted comment channel");
 
     let mut latest_datetime_sent = DateTime::from(SystemTime::UNIX_EPOCH);
+    let mut delay_secs = 150.0; // Comments are deleted much rarer than they are created.
+
+    let mut error_count = 0;
+    let mut count_error = || {
+        error_count += 1;
+        tracing::error!("Error detected in deleted loop (current count: {error_count})");
+        if error_count > 5 {
+            panic!("Too many errors in deleted loop!")
+        }
+    };
+
     loop {
-        let duration = rand::thread_rng().gen_range(120.0..180.0); // Comments are deleted much rarer than they are created.
+        let duration = rand::thread_rng().gen_range(delay_secs - 5.0..delay_secs + 5.0);
         let duration = std::time::Duration::from_secs_f32(duration);
         tracing::debug!("Sleeping for {duration:?}");
         tokio::time::sleep(duration).await;
@@ -228,6 +265,7 @@ async fn run_deleted_comment_loop(connection: Connection, client: Client) {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while retrieving comments: {e}");
+                count_error();
                 continue;
             }
         };
@@ -236,6 +274,7 @@ async fn run_deleted_comment_loop(connection: Connection, client: Client) {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while parsing comments as text: {e}");
+                count_error();
                 continue;
             }
         };
@@ -245,6 +284,7 @@ async fn run_deleted_comment_loop(connection: Connection, client: Client) {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while parsing comments JSON: {e}");
+                count_error();
                 continue;
             }
         };
@@ -284,6 +324,7 @@ async fn run_deleted_comment_loop(connection: Connection, client: Client) {
                 Ok(v) => v,
                 Err(e) => {
                     tracing::error!("Error while encoding comment to be sent: {e}");
+                    count_error();
                     continue;
                 }
             };
@@ -307,6 +348,17 @@ async fn run_deleted_comment_loop(connection: Connection, client: Client) {
 
         tracing::debug!("Published {published} deleted comments");
         tracing::debug!("Current latest update for deleted: {latest_datetime_sent}");
+
+        // Update the delay:
+        // if zero comments were received, increase the time (up to a maximum of 1800 seconds),
+        // if more than one comment was received, decrease the time (down to a minimum of 10 seconds).
+        if published == 0 {
+            delay_secs += 5.0;
+        }
+        if published > 1 {
+            delay_secs -= 5.0;
+        }
+        delay_secs = delay_secs.min(1800.0).max(10.0);
     }
 }
 

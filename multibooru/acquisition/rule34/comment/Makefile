@@ -15,7 +15,7 @@ delete:
 	kubectl delete -f deploy.yaml ; exit 0
 
 log:
-	kubectl logs -f deployment/rule34-comment-writer
+	kubectl logs -n imageboards -f deployment/rule34-comment-writer
 
 
 initialize_builder:

@@ -75,11 +75,25 @@ async fn main() {
     println!("Performed binding...");
 
     let mut greatest_id_sent = 0;
+
+    let mut delay_secs = 30.0;
+
+    let mut error_count = 0;
+    let mut count_error = || {
+        error_count += 1;
+        tracing::error!("Error detected in loop (current count: {error_count})");
+        if error_count > 5 {
+            panic!("Too many errors in new loop!")
+        }
+    };
+
     loop {
-        let duration = rng.gen_range(25.0..35.0);
+        let duration = rng.gen_range(delay_secs - 5.0..delay_secs + 5.0);
         let duration = std::time::Duration::from_secs_f32(duration);
-        tracing::trace!("Sleeping for {duration:?}");
+        tracing::debug!("Sleeping for {duration:?}");
         tokio::time::sleep(duration).await;
+
+        let mut published = 0;
 
         // Perform a GET to the API
         let request = client
@@ -90,6 +104,7 @@ async fn main() {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while retrieving comments: {e}");
+                count_error();
                 continue;
             }
         };
@@ -98,6 +113,7 @@ async fn main() {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while parsing comments as text: {e}");
+                count_error();
                 continue;
             }
         };
@@ -107,6 +123,7 @@ async fn main() {
             Ok(v) => v,
             Err(e) => {
                 tracing::error!("Error while parsing comments XML: {e}");
+                count_error();
                 continue;
             }
         };
@@ -119,6 +136,7 @@ async fn main() {
                     Ok(v) => v,
                     Err(e) => {
                         tracing::error!("Error while parsing comment's date: {e}");
+                        count_error();
                         continue;
                     }
                 };
@@ -146,6 +164,7 @@ async fn main() {
                     Ok(v) => v,
                     Err(e) => {
                         tracing::error!("Error while encoding comment to be sent: {e}");
+                        count_error();
                         continue;
                     }
                 };
@@ -164,8 +183,22 @@ async fn main() {
                     .unwrap();
 
                 greatest_id_sent = comment.id;
+                published += 1;
             }
         }
+
+        tracing::debug!("Published {published} new comments");
+        tracing::debug!("Latest ID: {greatest_id_sent}");
+        // Update the delay:
+        // if zero comments were received, increase the time (up to a maximum of 1800 seconds),
+        // if more than one comment was received, decrease the time (down to a minimum of 10 seconds).
+        if published == 0 {
+            delay_secs += 5.0;
+        }
+        if published > 1 {
+            delay_secs -= 5.0;
+        }
+        delay_secs = delay_secs.min(1800.0).max(10.0);
     }
 }
 
