@@ -1,4 +1,6 @@
-use std::time::Duration;
+mod metrics;
+
+use std::{time::Duration, sync::{Arc, Mutex}};
 
 use amqprs::{
     callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
@@ -10,12 +12,25 @@ use amqprs::{
     BasicProperties, Deliver,
 };
 use data_types::record::Record;
+use prometheus_client::{registry::Registry, metrics::family::Family};
 use sqlx::SqlitePool;
+
+use crate::metrics::{Metrics, run_metrics_server};
 
 #[tokio::main]
 async fn main() {
     println!("Started!");
     tracing_subscriber::fmt::init();
+
+    let mut registry = Registry::default();
+    let metrics = Metrics { records: Family::default() };
+    registry.register("imageboard_persistence_records", "The number of imageboard records seen by the persistence process", metrics.records.clone());
+
+    let registry = Arc::new(Mutex::new(registry));
+
+    let cancel_token = tokio_util::sync::CancellationToken::new();
+
+    tokio::spawn(run_metrics_server(registry.clone(), cancel_token.clone()));
 
     let database_path: String =
         std::env::var("DATABASE_PATH").expect("DATABASE_PATH should be provided");
@@ -83,7 +98,7 @@ async fn main() {
     .await
     .expect("Failed to create index of records");
 
-    let consumer = MessageConsumer { conn: sqlite_conn };
+    let consumer = MessageConsumer { conn: sqlite_conn, metrics };
 
     channel.basic_consume(consumer, args).await.unwrap();
 
@@ -95,6 +110,7 @@ async fn main() {
                 println!("Closing because of signal");
                 channel.close().await.unwrap();
                 connection.close().await.unwrap();
+                cancel_token.cancel();
                 return;
             }
             _ = interval.tick() => {
@@ -102,6 +118,7 @@ async fn main() {
                     println!("Closing because connection is now closed");
                     channel.close().await.unwrap();
                     connection.close().await.unwrap();
+                    cancel_token.cancel();
                     return;
                 }
             }
@@ -112,6 +129,7 @@ async fn main() {
 
 struct MessageConsumer {
     conn: SqlitePool,
+    metrics: Metrics,
 }
 
 #[async_trait::async_trait]
@@ -133,6 +151,8 @@ impl AsyncConsumer for MessageConsumer {
                     .basic_reject(BasicRejectArguments::new(deliver.delivery_tag(), false))
                     .await
                     .unwrap();
+                self.metrics.record_failed_parse();
+
                 return;
             }
         };
@@ -150,6 +170,7 @@ impl AsyncConsumer for MessageConsumer {
                 .basic_reject(BasicRejectArguments::new(deliver.delivery_tag(), false))
                 .await
                 .unwrap();
+            self.metrics.record_failed_save();
             return;
         }
 
@@ -159,5 +180,6 @@ impl AsyncConsumer for MessageConsumer {
             .basic_ack(BasicAckArguments::new(deliver.delivery_tag(), false))
             .await
             .unwrap();
+        self.metrics.record_ok();
     }
 }

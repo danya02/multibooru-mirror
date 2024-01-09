@@ -16,7 +16,7 @@ delete:
 	kubectl delete -f deploy.yaml ; exit 0
 
 log:
-	kubectl logs -n imageboards -f deployment/danbooru-comment-writer
+	kubectl logs -n imageboards -f deployment/danbooru-comment-writer -f
 
 
 initialize_builder:

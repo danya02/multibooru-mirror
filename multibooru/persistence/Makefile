@@ -12,7 +12,7 @@ delete:
 	kubectl delete -f deploy.yaml ; exit 0
 
 log:
-	kubectl logs -f deployment/persistence-reader
+	kubectl logs -n imageboards -f deployment/persistence-reader
 
 initialize_builder:
 	docker buildx create --bootstrap --name=local --driver=docker-container --platform=linux/arm64,linux/amd64

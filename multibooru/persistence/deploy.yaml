@@ -74,6 +74,9 @@ spec:
           volumeMounts:
             - name: data-root
               mountPath: /persistence-dir
+          ports:
+            - name: metrics
+              containerPort: 9100
       volumes:
         - name: data-root
           # persistentVolumeClaim:
@@ -81,3 +84,35 @@ spec:
           hostPath:
             path: /home/danya/kube/imageboards/data
             type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: persistence-reader
+  name: persistence-reader-metrics
+  namespace: imageboards
+spec:
+  ports:
+  - name: metrics
+    port: 9100
+    targetPort: metrics
+  selector:
+    app: persistence-reader
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: imageboards-persistence-reader-servicemonitor
+  namespace: monitoring
+  labels:
+    name: imageboards-persistence-reader-servicemonitor
+spec:
+  selector:
+    matchLabels:
+      app: persistence-reader
+  namespaceSelector:
+    matchNames:
+    - imageboards
+  endpoints:
+  - port: metrics
